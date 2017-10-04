@@ -4,12 +4,14 @@ from pyglet.window import key
 
 win_w = 800
 win_h = 600
+sp = 5
 keys = key.KeyStateHandler()
 
 class Star:
-    def __init__(self,x,y):
+    def __init__(self,x,y,sp):
         self.x = x
         self.y = y
+        self.sp = sp
         self.Star = arcade.Sprite('images/star.png')
         self.Star.set_position(self.x,self.y)
         
@@ -17,9 +19,26 @@ class Star:
         self.Star.draw()
 
     def move(self):
-        self.x -= 5
-        self.Star.set_position(self.x,self.y)
+        if (self.x == win_w-50 or self.x == 50):
+            self.sp = -self.sp
+            self.x += self.sp
+        else:
+            self.x += self.sp
+            self.Star.set_position(self.x,self.y)
 
+class SealBullet:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+        self.Seal_bul = arcade.Sprite('images/seal_bullet.png')
+        self.Seal_bul.set_position(self.x,self.y)
+        
+    def draw(self):
+        self.Seal_bul.draw()
+
+    def move(self):
+        self.y += 5
+            
 class Player:
     def __init__(self,x,y):
         self.x = x
@@ -43,11 +62,13 @@ class Player:
         if keys[key.DOWN]:
             self.y -= 3
             self.Seal.set_position(self.x,self.y)
+        if keys[key.SPACE]:
+            sealbullet = SealBullet(self.x,self.y+10)
+            sealbullet.draw()
         
             
 player = Player(400,100)
-star = Star(400,500)
-        
+star = Star(400,500,sp)     
 
 def on_draw(delta_time):
     arcade.start_render()
