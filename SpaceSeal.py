@@ -6,6 +6,21 @@ win_w = 800
 win_h = 600
 keys = key.KeyStateHandler()
 
+class Star:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+        self.Star = arcade.Sprite('images/star.png')
+        self.Star.set_position(self.x,self.y)
+        
+    def draw(self):
+        arcade.start_render()
+        self.Star.draw()
+
+    def move(self):
+        self.x -= 5
+        self.Star.set_position(self.x,self.y)
+
 class Player:
     def __init__(self,x,y):
         self.x = x
@@ -32,13 +47,16 @@ class Player:
             self.Seal.set_position(self.x,self.y)
         
             
-player = Player(400,100)       
+player = Player(400,100)
+star = Star(400,500)
         
 
 def on_draw(delta_time):
     arcade.start_render()
-    player.move(keys)
+    star.draw()
     player.draw()
+    star.move()
+    player.move(keys)
     
     
 def main():
