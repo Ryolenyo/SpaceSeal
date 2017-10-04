@@ -18,6 +18,10 @@ class Star:
     def draw(self):
         self.Star.draw()
 
+    def fire(self):
+        starbullet = StarBullet(self.x,self.y+10)
+        starbullet.draw()    
+
     def move(self):
         if (self.x == win_w-50 or self.x == 50):
             self.sp = -self.sp
@@ -25,6 +29,19 @@ class Star:
         else:
             self.x += self.sp
             self.Star.set_position(self.x,self.y)
+
+class StarBullet:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+        self.Star_bul = arcade.Sprite('images/star_bullet.png')
+        self.Star_bul.set_position(self.x,self.y)
+        
+    def draw(self):
+        self.Star_bul.draw()
+
+    def move(self):
+        self.y -= 5
 
 class SealBullet:
     def __init__(self,x,y):
@@ -75,6 +92,7 @@ def on_draw(delta_time):
     star.draw()
     player.draw()
     star.move()
+    star.fire()
     player.move(keys)
     
     
