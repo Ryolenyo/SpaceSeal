@@ -14,7 +14,6 @@ class Star:
         self.Star.set_position(self.x,self.y)
         
     def draw(self):
-        arcade.start_render()
         self.Star.draw()
 
     def move(self):
@@ -29,7 +28,6 @@ class Player:
         self.Seal.set_position(self.x,self.y)
 
     def draw(self):
-        arcade.start_render()
         self.Seal.draw()
 
     def move(self,keys):
