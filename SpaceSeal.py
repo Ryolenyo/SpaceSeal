@@ -93,8 +93,8 @@ class Player:
             
 player = Player(400,100)
 star = Star(400,500,sp)
-sealbullet = SealBullet(player.x,player.y)
 starbullet = StarBullet(star.x,star.y)
+sealbullets = []
 
 def on_draw(delta_time):
     arcade.start_render()
@@ -102,11 +102,11 @@ def on_draw(delta_time):
     player.draw()
     star.move()
     player.move(keys)
-    if (player.fire(keys) == True):
+    for sealbullet in sealbullets:
         sealbullet.draw()
+    if (player.fire(keys) == True):
+        sealbullets.append(SealBullet(player.x,player.y))
     starbullet.draw()
-        
-    
     
 def main():
     arcade.open_window(win_w,win_h,"SPACE SEAL")
