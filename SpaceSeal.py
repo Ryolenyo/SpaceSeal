@@ -57,7 +57,7 @@ class SealBullet:
         self.move()
 
     def move(self):
-        self.y += 5
+        self.y += 10
         self.Seal_bul.set_position(self.x,self.y)
             
 class Player:
@@ -106,7 +106,7 @@ def on_draw(delta_time):
         sealbullet.draw()
     if (player.fire(keys) == True):
         sealbullets.append(SealBullet(player.x,player.y))
-    starbullet.draw()
+    #starbullet.draw()
     
 def main():
     arcade.open_window(win_w,win_h,"SPACE SEAL")
