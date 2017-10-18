@@ -1,119 +1,147 @@
 import arcade
+import random
+import math
 from random import randint
-from pyglet.window import key
 
-win_w = 800
-win_h = 600
-sp = 5
-keys = key.KeyStateHandler()
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 
-class Star:
-    def __init__(self,x,y,sp):
-        self.x = x
-        self.y = y
-        self.sp = sp
-        self.Star = arcade.Sprite('images/star.png')
-        self.Star.set_position(self.x,self.y)
+class SealBullet(arcade.Sprite):
+    def __init__(self,file):
+        super().__init__(file)
+        self.speed = 10
+
+    def update(self):
+        self.center_y += self.speed     
+        print("Seal Shoot")
+
+class StarBullet(arcade.Sprite):
+    def __init__(self,file):
+        super().__init__(file)
+        self.speed = 10
+
+    def update(self):
+        self.center_y -= self.speed     
         
-    def draw(self):
-        self.Star.draw()
 
-#    def fire(self):
-#        starbullet = StarBullet(self.x,self.y+10)
-#        starbullet.draw()    
+class SealSprite(arcade.Sprite):
+    def __init__(self,file):
+        super().__init__(file)
+        self.life = 5
+        self.speed_x = 0
+        self.speed_y = 0
 
-    def move(self):
-        if (self.x == win_w-50 or self.x == 50):
-            self.sp = -self.sp
-            self.x += self.sp
-        else:
-            self.x += self.sp
-            self.Star.set_position(self.x,self.y)
+    def update(self):
+        self.center_x += self.speed_x
+        self.center_y += self.speed_y
 
-class StarBullet:
-    def __init__(self,x,y):
-        self.x = x
-        self.y = y
-        self.Star_bul = arcade.Sprite('images/star_bullet.png')
-        self.Star_bul.set_position(self.x,self.y)
+    def move(self,key):
+        if key == arcade.key.LEFT:
+            self.speed_x = -5
+        if key == arcade.key.RIGHT:
+            self.speed_x = 5
+        if key == arcade.key.UP:
+            self.speed_y = 5
+        if key == arcade.key.DOWN:
+            self.speed_y = -5
+
+    def stop(self,key):
+        if key == arcade.key.LEFT or key == arcade.key.RIGHT:
+            self.speed_x = 0
+        if key == arcade.key.UP or key == arcade.key.DOWN:
+            self.speed_y = 0
+
+class StarSprite(arcade.Sprite):
+    def __init__(self,file):
+        super().__init__(file)
+        self.speed = 5
+        self.life = 50
+
+    def update(self):
+        self.center_x += self.speed
+        if self.center_x > 600 or self.center_x < 200:
+            self.speed = -self.speed
+
         
-    def draw(self):
-        self.Star_bul.draw()
-        self.move()
 
-    def move(self):
-        self.y -= 5
-        self.Star_bul.set_position(self.x,self.y)
+class MyWindow(arcade.Window):
+    def __init__(self):
+        super().__init__(SCREEN_WIDTH,SCREEN_HEIGHT)
+        self.all_sprites_list = None
+        self.bullet_list = None
+        self.enemy_bullet_list = None
+        self.player_sprite = None
 
-class SealBullet:
-    def __init__(self,x,y):
-        self.x = x
-        self.y = y
-        self.Seal_bul = arcade.Sprite('images/seal_bullet.png')
-        self.Seal_bul.set_position(self.x,self.y)
-        
-    def draw(self):
-        self.Seal_bul.draw()
-        self.move()
+    def start_new_game(self):
+        self.all_sprites_list = arcade.SpriteList()
+        self.bullet_list = arcade.SpriteList()
+        self.enemy_bullet_list = arcade.SpriteList()
+        self.player_sprite = SealSprite("images/seal.png")
+        self.enemy_sprite = StarSprite("images/star.png")
+        self.player_sprite.center_x = 400
+        self.player_sprite.center_y = 100
+        self.enemy_sprite.center_x = 400
+        self.enemy_sprite.center_y = 500
+        self.all_sprites_list.append(self.player_sprite)
+        self.all_sprites_list.append(self.enemy_sprite)
+        arcade.set_background_color(arcade.color.BLACK)
 
-    def move(self):
-        self.y += 10
-        self.Seal_bul.set_position(self.x,self.y)
-            
-class Player:
-    def __init__(self,x,y):
-        self.x = x
-        self.y = y
-        self.Seal = arcade.Sprite('images/seal.png')
-        self.Seal.set_position(self.x,self.y)
+        self.total_time = 0.0
+        self.timer_text = None
 
-    def draw(self):
-        self.Seal.draw()
 
-    def move(self,keys):
-        if keys[key.LEFT]:
-            self.x -= 3
-            self.Seal.set_position(self.x,self.y)
-        if keys[key.RIGHT]:
-            self.x += 3
-            self.Seal.set_position(self.x,self.y)
-        if keys[key.UP]:
-            self.y += 3
-            self.Seal.set_position(self.x,self.y)
-        if keys[key.DOWN]:
-            self.y -= 3
-            self.Seal.set_position(self.x,self.y)
+    def enemy_shoot(self,sec):
+        if sec % 1 == 0:
+            enemy_bullet_sprite = StarBullet("images/star_bullet.png")
+            enemy_bullet_sprite.center_x = self.enemy_sprite.center_x
+            enemy_bullet_sprite.center_y = self.enemy_sprite.center_y
+            enemy_bullet_sprite.update()
+            self.all_sprites_list.append(enemy_bullet_sprite)
+            self.enemy_bullet_list.append(enemy_bullet_sprite)
 
-    def fire(self,keys):
-        if keys[key.SPACE]:
-            return True
-        else:
-            return False
-        
-            
-player = Player(400,100)
-star = Star(400,500,sp)
-starbullet = StarBullet(star.x,star.y)
-sealbullets = []
+    def on_draw(self):
+        arcade.start_render()
 
-def on_draw(delta_time):
-    arcade.start_render()
-    star.draw()
-    player.draw()
-    star.move()
-    player.move(keys)
-    for sealbullet in sealbullets:
-        sealbullet.draw()
-    if (player.fire(keys) == True):
-        sealbullets.append(SealBullet(player.x,player.y))
-    #starbullet.draw()
+        minutes = int(self.total_time)//60
+        seconds = int(self.total_time)%60
+
+        output = f"Time: {minutes:02d}:{seconds:02d}"
+
+        if not self.timer_text or self.timer_text.text != output:
+            self.timer_text = arcade.create_text(output, arcade.color.WHITE, 10)
+
+        arcade.render_text(self.timer_text, 700, 560)
+
+        self.all_sprites_list.draw()
+        self.player_sprite.update()
+        self.enemy_sprite.update()
     
-def main():
-    arcade.open_window(win_w,win_h,"SPACE SEAL")
-    arcade.set_background_color(arcade.color.BLACK)
-    arcade.get_window().push_handlers(keys)
-    arcade.schedule(on_draw,1/80)
-    arcade.run()
 
-if __name__ == '__main__':
-    main()
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.LEFT or key == arcade.key.RIGHT or key == arcade.key.UP or key == arcade.key.DOWN:
+            self.player_sprite.move(key)
+        if key == arcade.key.SPACE:
+            bullet_sprite = SealBullet("images/seal_bullet.png")
+            bullet_sprite.center_x = self.player_sprite.center_x
+            bullet_sprite.center_y = self.player_sprite.center_y
+            bullet_sprite.update()
+            self.all_sprites_list.append(bullet_sprite)
+            self.bullet_list.append(bullet_sprite)
+            
+    def on_key_release(self, key, modifiers):
+        if key == arcade.key.LEFT or key == arcade.key.RIGHT or key == arcade.key.UP or key == arcade.key.DOWN:
+            self.player_sprite.stop(key)
+
+    def update(self,delta_time):
+        self.total_time += delta_time
+        self.enemy_shoot(int(self.total_time)%60)
+        
+
+def main():
+        window = MyWindow()
+        window.start_new_game()  
+        arcade.run()
+
+if __name__ == "__main__":
+        main()
+        
