@@ -98,11 +98,10 @@ class StarSprite(arcade.Sprite):
         
 '''--------------------------window------------------------'''
 
-over = False
 
 class MyWindow(arcade.Window):
     def __init__(self):
-        super().__init__(SCREEN_WIDTH,SCREEN_HEIGHT,over)
+        super().__init__(SCREEN_WIDTH,SCREEN_HEIGHT)
         self.all_sprites_list = None
         self.enemy_list = None
         self.bullet_list = None
@@ -142,7 +141,6 @@ class MyWindow(arcade.Window):
 
     def on_draw(self):
         arcade.start_render()
-        self.over = over
 
         minutes = int(self.total_time)//60
         seconds = int(self.total_time)%60
@@ -180,14 +178,6 @@ class MyWindow(arcade.Window):
 
 
                     
-#                    self.over = True
-#
-#        if self.over == True: 
-#            self.textover = "YOU DIED"
-#            self.all_text = arcade.create_text(self.textover, arcade.color.WHITE, 30)
-#            arcade.render_text(self.all_text, 400, 300)
-    
-
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.RIGHT or key == arcade.key.UP or key == arcade.key.DOWN:
             self.player_sprite.move(key)
@@ -214,8 +204,13 @@ class MyWindow(arcade.Window):
             if self.enemy_sprite.hit(bullet,20):
                 bullet.kill()
                 self.enemy_sprite.life -= 1
+                #enemy died
                 if self.enemy_sprite.life ==0:
                     self.enemy_sprite.kill()
+                    self.win_sprite = WinSprite("images/victory.png")
+                    self.all_sprites_list.append(self.win_sprite)
+                    self.win_sprite.center_x = 400
+                    self.win_sprite.center_y = 300
 
     #random item position
     def randomItem(self):
@@ -246,6 +241,11 @@ class OverSprite(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
         print("GAME OVER")
+
+class WinSprite(arcade.Sprite):
+    def __init__(self,file):
+        super().__init__(file)
+        print("YOU WIN")
 
         
 def main():
