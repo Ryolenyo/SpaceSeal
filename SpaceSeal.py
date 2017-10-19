@@ -5,18 +5,44 @@ from random import randint
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-seal_dmg = 5
+seal_dmg = 1
+seal_sp = 5
 
 '''--------------------------item-------------------------'''
 
 class itemPower(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
-        self.speed = 5
+        self.speed_x = randint(-5,5)
+        if self.speed_x == 0:
+            self.speed_x = 1
+        self.speed_y = randint(-5,5)
+        if self.speed_y == 0:
+            self.speed_y = 1
 
     def update(self):
-        self.center_y += self.speed
-        self.center_x += self.speed
+        self.center_y += self.speed_y
+        self.center_x += self.speed_x
+        if (self.center_y == 600 or self.center_y == 0 or self.center_x == 800 or self.center_x == 0):
+            self.kill()
+
+    def hit(self,other,hit_size):
+        return (abs(self.center_x - other.center_x) <= hit_size) and (abs(self.center_y - other.center_y) <= hit_size)
+
+
+class itemSpeed(arcade.Sprite):
+    def __init__(self,file):
+        super().__init__(file)
+        self.speed_x = randint(-5,5)
+        if self.speed_x == 0:
+            self.speed_x = 1
+        self.speed_y = randint(-5,5)
+        if self.speed_y == 0:
+            self.speed_y = 1
+
+    def update(self):
+        self.center_y += self.speed_y
+        self.center_x += self.speed_x
         if (self.center_y == 600 or self.center_y == 0 or self.center_x == 800 or self.center_x == 0):
             self.kill()
 
@@ -56,14 +82,15 @@ class SealSprite(arcade.Sprite):
         self.center_y += self.speed_y     
 
     def move(self,key):
+        global seal_sp 
         if key == arcade.key.LEFT:
-            self.speed_x = -5
+            self.speed_x = -seal_sp 
         if key == arcade.key.RIGHT:
-            self.speed_x = 5
+            self.speed_x = seal_sp 
         if key == arcade.key.UP:
-            self.speed_y = 5
+            self.speed_y = seal_sp 
         if key == arcade.key.DOWN:
-            self.speed_y = -5
+            self.speed_y = -seal_sp 
 
     def stop(self,key):
         if key == arcade.key.LEFT or key == arcade.key.RIGHT:
@@ -89,7 +116,7 @@ class StarSprite(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
         self.speed = 5
-        self.life = 10
+        self.life = 100
 
     def update(self):
         self.center_x += self.speed
@@ -112,10 +139,12 @@ class MyWindow(arcade.Window):
         self.enemy_bullet_list = None
         self.player_sprite = None
         self.item_list = None
+        self.itemsp_list = None
 
     def start_new_game(self):
         self.all_sprites_list = arcade.SpriteList()
         self.item_list = arcade.SpriteList()
+        self.itemsp_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
         self.hp_list = arcade.SpriteList()
@@ -146,6 +175,7 @@ class MyWindow(arcade.Window):
     def on_draw(self):
         arcade.start_render()
 
+        #show time
         minutes = int(self.total_time)//60
         seconds = int(self.total_time)%60
 
@@ -160,11 +190,6 @@ class MyWindow(arcade.Window):
         self.player_sprite.update()
         self.enemy_sprite.update()
 
-        #call random item function
-        if seconds%60==0 :
-            self.randomItem()
-
-        self.item_list.update()
 
         
         #shoot player
@@ -181,12 +206,29 @@ class MyWindow(arcade.Window):
                     self.over_sprite.center_x = 400
                     self.over_sprite.center_y = 300
 
-        #get item
+        #call random item function
+        if self.total_time > seconds+0.99 :
+            self.randomItemPw()
+
+        self.item_list.update()
+
+        if self.total_time < seconds+0.01 :
+            self.randomItemSp()
+
+        self.itemsp_list.update()
+
+        #get item power
         for item in self.item_list:
             if self.player_sprite.hit(item,20):
                 item.kill()
-                #self.player_sprite.life -= 1
+                global seal_dmg
+                seal_dmg *=2
 
+        for item in self.itemsp_list:
+            if self.player_sprite.hit(item,20):
+                item.kill()
+                global seal_sp
+                seal_sp +=10 #I AM THE FLASH
                     
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.RIGHT or key == arcade.key.UP or key == arcade.key.DOWN:
@@ -215,8 +257,9 @@ class MyWindow(arcade.Window):
             if self.enemy_sprite.hit(bullet,20):
                 bullet.kill()
                 self.enemy_sprite.life -= self.seal_dmg
+                print(self.enemy_sprite.life)
                 #enemy died
-                if self.enemy_sprite.life ==0:
+                if self.enemy_sprite.life <=0:
                     self.enemy_sprite.kill()
                     self.win_sprite = WinSprite("images/victory.png")
                     self.all_sprites_list.append(self.win_sprite)
@@ -224,13 +267,21 @@ class MyWindow(arcade.Window):
                     self.win_sprite.center_y = 300
 
     #random item position
-    def randomItem(self):
+    def randomItemPw(self):
         itempow_sprite = itemPower("images/powerup.png")
         itempow_sprite.center_x = randint(200,600)
         itempow_sprite.center_y = randint(150,450)
         itempow_sprite.update()
         self.all_sprites_list.append(itempow_sprite)
         self.item_list.append(itempow_sprite)
+
+    def randomItemSp(self,):
+        itemspe_sprite = itemPower("images/speedup.png")
+        itemspe_sprite.center_x = randint(200,600)
+        itemspe_sprite.center_y = randint(150,450)
+        itemspe_sprite.update()
+        self.all_sprites_list.append(itemspe_sprite)
+        self.itemsp_list.append(itemspe_sprite)
             
         
                 
