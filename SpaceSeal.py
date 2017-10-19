@@ -6,6 +6,7 @@ from random import randint
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
+
 class SealHP(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
@@ -18,7 +19,7 @@ class SealHP(arcade.Sprite):
 class SealBullet(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
-        self.speed = 10
+        self.speed = 20
 
     def update(self):
         self.center_y += self.speed
@@ -37,7 +38,7 @@ class StarBullet(arcade.Sprite):
 class SealSprite(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
-        self.life = 5
+        self.life = 3
         self.speed_x = 0
         self.speed_y = 0
 
@@ -62,16 +63,22 @@ class SealSprite(arcade.Sprite):
         if key == arcade.key.UP or key == arcade.key.DOWN:
             self.speed_y = 0
 
+    def hit(self,other,hit_size):
+        return (abs(self.center_x - other.center_x) <= hit_size) and (abs(self.center_y - other.center_y) <= hit_size)
+
 class StarSprite(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
         self.speed = 5
-        self.life = 50
+        self.life = 10
 
     def update(self):
         self.center_x += self.speed
         if self.center_x > 600 or self.center_x < 200:
             self.speed = -self.speed
+
+    def hit(self,other,hit_size):
+        return (abs(self.center_x - other.center_x) <= hit_size) and (abs(self.center_y - other.center_y) <= hit_size)
 
         
 
@@ -79,12 +86,14 @@ class MyWindow(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH,SCREEN_HEIGHT)
         self.all_sprites_list = None
+        self.enemy_list = None
         self.bullet_list = None
         self.enemy_bullet_list = None
         self.player_sprite = None
 
     def start_new_game(self):
         self.all_sprites_list = arcade.SpriteList()
+        self.enemy_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
         self.enemy_bullet_list = arcade.SpriteList()
         self.player_sprite = SealSprite("images/seal.png")
@@ -139,6 +148,24 @@ class MyWindow(arcade.Window):
         self.enemy_shoot(int(self.total_time)%60)
         self.bullet_list.update()
         self.enemy_bullet_list.update()
+
+        #shoot enemy
+        for bullet in self.bullet_list:
+            if self.enemy_sprite.hit(bullet,20):
+                bullet.kill()
+                self.enemy_sprite.life -= 1
+                if self.enemy_sprite.life ==0:
+                    self.enemy_sprite.kill()
+
+        #shoot player
+        for bullet in self.enemy_bullet_list:
+            if self.player_sprite.hit(bullet,20):
+                bullet.kill()
+                self.player_sprite.life -= 1
+                if self.player_sprite.life ==0:
+                    self.player_sprite.kill()
+
+        
 
     def enemy_shoot(self,sec):
         if sec > self.count+0.5: #delay shooting 
