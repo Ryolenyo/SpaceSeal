@@ -6,22 +6,32 @@ from random import randint
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
+class SealHP(arcade.Sprite):
+    def __init__(self,file):
+        super().__init__(file)
+
+    def update(self):
+        self.center_x += 0
+        
+        
+
 class SealBullet(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
         self.speed = 10
 
     def update(self):
-        self.center_y += self.speed     
-        print("Seal Shoot")
+        self.center_y += self.speed
+        if (self.center_y == 600):
+            self.kill()   
 
 class StarBullet(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
-        self.speed = 10
+        self.speed = 5
 
     def update(self):
-        self.center_y -= self.speed     
+        self.center_y -= self.speed
         
 
 class SealSprite(arcade.Sprite):
@@ -34,6 +44,7 @@ class SealSprite(arcade.Sprite):
     def update(self):
         self.center_x += self.speed_x
         self.center_y += self.speed_y
+        
 
     def move(self,key):
         if key == arcade.key.LEFT:
@@ -88,16 +99,7 @@ class MyWindow(arcade.Window):
 
         self.total_time = 0.0
         self.timer_text = None
-
-
-    def enemy_shoot(self,sec):
-        if sec % 1 == 0:
-            enemy_bullet_sprite = StarBullet("images/star_bullet.png")
-            enemy_bullet_sprite.center_x = self.enemy_sprite.center_x
-            enemy_bullet_sprite.center_y = self.enemy_sprite.center_y
-            enemy_bullet_sprite.update()
-            self.all_sprites_list.append(enemy_bullet_sprite)
-            self.enemy_bullet_list.append(enemy_bullet_sprite)
+        self.count = 0
 
     def on_draw(self):
         arcade.start_render()
@@ -135,6 +137,18 @@ class MyWindow(arcade.Window):
     def update(self,delta_time):
         self.total_time += delta_time
         self.enemy_shoot(int(self.total_time)%60)
+        self.bullet_list.update()
+        self.enemy_bullet_list.update()
+
+    def enemy_shoot(self,sec):
+        if sec > self.count+0.5: #delay shooting 
+            enemy_bullet_sprite = StarBullet("images/star_bullet.png")
+            enemy_bullet_sprite.center_x = self.enemy_sprite.center_x
+            enemy_bullet_sprite.center_y = self.enemy_sprite.center_y
+            enemy_bullet_sprite.update()
+            self.all_sprites_list.append(enemy_bullet_sprite)
+            self.enemy_bullet_list.append(enemy_bullet_sprite)
+            self.count += 1
         
 
 def main():
