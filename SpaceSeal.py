@@ -5,19 +5,23 @@ from random import randint
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+seal_dmg = 5
 
 '''--------------------------item-------------------------'''
 
 class itemPower(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
-        self.speed = 20
+        self.speed = 5
 
     def update(self):
         self.center_y += self.speed
         self.center_x += self.speed
         if (self.center_y == 600 or self.center_y == 0 or self.center_x == 800 or self.center_x == 0):
             self.kill()
+
+    def hit(self,other,hit_size):
+        return (abs(self.center_x - other.center_x) <= hit_size) and (abs(self.center_y - other.center_y) <= hit_size)
         
 
 '''--------------------------player-------------------------'''
@@ -101,7 +105,7 @@ class StarSprite(arcade.Sprite):
 
 class MyWindow(arcade.Window):
     def __init__(self):
-        super().__init__(SCREEN_WIDTH,SCREEN_HEIGHT)
+        super().__init__(SCREEN_WIDTH,SCREEN_HEIGHT,seal_dmg)
         self.all_sprites_list = None
         self.enemy_list = None
         self.bullet_list = None
@@ -156,7 +160,8 @@ class MyWindow(arcade.Window):
         self.player_sprite.update()
         self.enemy_sprite.update()
 
-        if minutes == seconds :
+        #call random item function
+        if seconds%60==0 :
             self.randomItem()
 
         self.item_list.update()
@@ -176,6 +181,11 @@ class MyWindow(arcade.Window):
                     self.over_sprite.center_x = 400
                     self.over_sprite.center_y = 300
 
+        #get item
+        for item in self.item_list:
+            if self.player_sprite.hit(item,20):
+                item.kill()
+                #self.player_sprite.life -= 1
 
                     
     def on_key_press(self, key, modifiers):
@@ -194,6 +204,7 @@ class MyWindow(arcade.Window):
             self.player_sprite.stop(key)
 
     def update(self,delta_time):
+        self.seal_dmg = seal_dmg
         self.total_time += delta_time
         self.enemy_shoot(int(self.total_time)%60)
         self.bullet_list.update()
@@ -203,7 +214,7 @@ class MyWindow(arcade.Window):
         for bullet in self.bullet_list:
             if self.enemy_sprite.hit(bullet,20):
                 bullet.kill()
-                self.enemy_sprite.life -= 1
+                self.enemy_sprite.life -= self.seal_dmg
                 #enemy died
                 if self.enemy_sprite.life ==0:
                     self.enemy_sprite.kill()
@@ -235,7 +246,7 @@ class MyWindow(arcade.Window):
             self.enemy_bullet_list.append(enemy_bullet_sprite)
             self.count += stg1
 
-
+'''--------------------------end game------------------------'''
 
 class OverSprite(arcade.Sprite):
     def __init__(self,file):
@@ -246,6 +257,9 @@ class WinSprite(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
         print("YOU WIN")
+
+
+'''----------------------------------------------------------'''
 
         
 def main():
