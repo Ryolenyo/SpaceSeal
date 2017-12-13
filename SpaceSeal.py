@@ -7,6 +7,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 seal_dmg = 1
 seal_sp = 5
+seal_hp = 5
 
 '''--------------------------item-------------------------'''
 
@@ -48,6 +49,17 @@ class itemSpeed(arcade.Sprite):
 
     def hit(self,other,hit_size):
         return (abs(self.center_x - other.center_x) <= hit_size) and (abs(self.center_y - other.center_y) <= hit_size)
+
+class itemPotion(arcade.Sprite):
+    def __init__(self,file):
+        super().__init__(file)
+
+    def update(self):
+        if (self.center_y == 600 or self.center_y == 0 or self.center_x == 800 or self.center_x == 0):
+            self.kill()
+
+    def hit(self,other,hit_size):
+        return (abs(self.center_x - other.center_x) <= hit_size) and (abs(self.center_y - other.center_y) <= hit_size)
         
 
 '''--------------------------player-------------------------'''
@@ -73,7 +85,8 @@ class SealBullet(arcade.Sprite):
 class SealSprite(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
-        self.life = 3
+        global seal_hp 
+        self.life = seal_hp
         self.speed_x = 0
         self.speed_y = 0
 
@@ -116,7 +129,7 @@ class StarSprite(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
         self.speed = 5
-        self.life = 100
+        self.life = 50
 
     def update(self):
         self.center_x += self.speed
@@ -140,11 +153,13 @@ class MyWindow(arcade.Window):
         self.player_sprite = None
         self.item_list = None
         self.itemsp_list = None
+        self.itemhp_list = None
 
     def start_new_game(self):
         self.all_sprites_list = arcade.SpriteList()
         self.item_list = arcade.SpriteList()
         self.itemsp_list = arcade.SpriteList()
+        self.itemhp_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
         self.hp_list = arcade.SpriteList()
@@ -190,7 +205,17 @@ class MyWindow(arcade.Window):
         self.player_sprite.update()
         self.enemy_sprite.update()
 
-
+        
+        if minutes >= 1 and seconds < 0.1:
+            itemhp_sprite = itemPotion("images/potion.png")
+            itemhp_sprite.center_x = randint(200,600)
+            itemhp_sprite.center_y = 700
+            itemhp_sprite.update()
+            self.all_sprites_list.append(itemhp_sprite)
+            self.itemhp_list.append(itemhp_sprite)
+        
+        self.itemhp_list.update()   
+            
         
         #shoot player
         for bullet in self.enemy_bullet_list:
@@ -229,6 +254,12 @@ class MyWindow(arcade.Window):
                 item.kill()
                 global seal_sp
                 seal_sp +=10 #I AM THE FLASH
+
+        for item in self.itemhp_list:
+            if self.player_sprite.hit(item,20):
+                item.kill()
+                global seal_hp
+                seal_hp += 1
                     
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.RIGHT or key == arcade.key.UP or key == arcade.key.DOWN:
@@ -257,7 +288,6 @@ class MyWindow(arcade.Window):
             if self.enemy_sprite.hit(bullet,20):
                 bullet.kill()
                 self.enemy_sprite.life -= self.seal_dmg
-                print(self.enemy_sprite.life)
                 #enemy died
                 if self.enemy_sprite.life <=0:
                     self.enemy_sprite.kill()
@@ -287,7 +317,7 @@ class MyWindow(arcade.Window):
                 
 
     def enemy_shoot(self,sec):
-        stg1 = 1
+        stg1 = 1.0
         if sec > self.count: #delay shooting 
             enemy_bullet_sprite = StarBullet("images/star_bullet.png")
             enemy_bullet_sprite.center_x = self.enemy_sprite.center_x
@@ -302,12 +332,10 @@ class MyWindow(arcade.Window):
 class OverSprite(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
-        print("GAME OVER")
 
 class WinSprite(arcade.Sprite):
     def __init__(self,file):
         super().__init__(file)
-        print("YOU WIN")
 
 
 '''----------------------------------------------------------'''
